@@ -3,12 +3,16 @@ package com.datacentric.bootstrap;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
 import com.alee.extended.breadcrumb.BreadcrumbElementType;
@@ -35,20 +39,27 @@ import com.alee.managers.tooltip.TooltipWay;
 import com.alee.managers.tooltip.WebCustomTooltip;
 import com.alee.utils.SwingUtils;
 import com.alee.utils.reflection.JarEntry;
+import com.reportmill.shape.RMDocument;
 
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JTextField;
 import javax.swing.JLayeredPane;
 import javax.swing.JButton;
 import java.awt.CardLayout;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.tree.TreeModel;
 
-public class Workbench extends JFrame {
+public abstract class Workbench extends JFrame {
 
-	private WebButton featureStateLegend;
-
+	private WebButton errorStateButton;
 	private String statusMessage = "";
 
 	private WebLabel statusMessageLabel;
@@ -61,130 +72,21 @@ public class Workbench extends JFrame {
 	private JPanel panel_1;
 	private JPanel panel_2;
 
-	private WebToolBar toolbar;
+	protected WebToolBar toolbar;
+	private WebBreadcrumb locationBreadcrumb;
 
 	public Workbench() {
-		statusMessageLabel = new WebLabel(statusMessage,
-				createImageIcon("/legend.png"));
 
+		// Layout the frame
 		getContentPane().setLayout(
 				new MigLayout("novisualpadding, fill,gap 0, ins 0",
 						"[200][grow]", "[][][grow,fill][]"));
 
-		createBreadcrumb();
 		creatingToolBar();
+		createBreadcrumb();
 		creatingMainMenu();
 		creatingMainContent();
 		createStatusBar();
-	}
-
-	private void creatingToolBar() {
-		toolbar = new WebToolBar(WebToolBar.HORIZONTAL);
-		toolbar.setToolbarStyle(ToolbarStyle.attached);
-		toolbar.setFloatable(false);
-		loadToolBar(); // get the toolbar content
-		getContentPane().add(toolbar, "cell 0 0 2 1,growx");
-
-		WebToggleButton left = new WebToggleButton("Planning",createImageIcon("/icons/state/beta.png"));
-		WebToggleButton center = new WebToggleButton("Center toggle");
-		WebToggleButton right = new WebToggleButton("Right toggle");
-		toolbar.addToEnd(new WebButtonGroup(WebButtonGroup.HORIZONTAL, true,
-				left, center, right));
-	}
-
-	private void loadToolBar() {
-		// Features state legend
-		WebButton button = WebButton
-				.createIconWebButton(createImageIcon("/legend.png"));
-		button.setFocusable(false);
-		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-			}
-		});
-		toolbar.add(button);
-
-		toolbar.addSeparator();
-
-		WebButton button2 = WebButton
-				.createIconWebButton(createImageIcon("/info.png"));
-		button2.setFocusable(false);
-		toolbar.add(button2);
-
-		WebButton button3 = new WebButton("Planning",
-				createImageIcon("/icons/state/beta.png"));
-		button3.setFocusable(false);
-		toolbar.addToEnd(button3);
-	}
-
-	/** Returns an ImageIcon, or null if the path was invalid. */
-	protected ImageIcon createImageIcon(String path) {
-		java.net.URL imgURL = getClass().getResource(path);
-		if (imgURL != null) {
-			return new ImageIcon(imgURL);
-		} else {
-			System.err.println("Couldn't find file: " + path);
-			return null;
-		}
-	}
-
-	public JPanel creatingMainContent() {
-		layeredPane = new JPanel();
-		getContentPane().add(layeredPane, "cell 1 2,grow");
-		layeredPane.setLayout(new CardLayout(0, 0));
-
-		tabbedPane_1 = new WebTabbedPane(JTabbedPane.TOP);
-		tabbedPane_1.setTabbedPaneStyle(TabbedPaneStyle.attached);
-		layeredPane.add(tabbedPane_1, "name_1347176716933076000");
-
-		panel = new JPanel();
-		tabbedPane_1.addTab("New tab", null, panel, null);
-
-		panel_1 = new JPanel();
-		tabbedPane_1.addTab("New tab", null, panel_1, null);
-
-		panel_2 = new JPanel();
-		tabbedPane_1.addTab("New tab", null, panel_2, null);
-		return layeredPane;
-	}
-
-	public WebTree creatingMainMenu() {
-		tree = new WebTree();
-		tree.setShowsRootHandles(true);
-		tree.setVisibleRowCount(4);
-		tree.setEditable(true);
-		WebScrollPane treeScroll = new WebScrollPane(tree);
-		treeScroll.setPreferredSize(new Dimension(230, 200));
-		GroupPanel g = new GroupPanel(treeScroll);
-		getContentPane().add(treeScroll, "cell 0 2,growx");
-		return tree;
-	}
-
-	public WebStatusBar createStatusBar() {
-
-		// Window status bar
-		final WebStatusBar statusBar = new WebStatusBar();
-		getContentPane().add(statusBar, "cell 0 3 2 1,growx");
-
-		// Features state legend
-		featureStateLegend = WebButton
-				.createIconWebButton(createImageIcon("/legend.png"));
-
-		featureStateLegend.setFocusable(false);
-		featureStateLegend.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-			}
-		});
-		statusBar.add(featureStateLegend);
-
-		statusBar.add(statusMessageLabel);
-
-		WebMemoryBar memoryBar = new WebMemoryBar();
-		memoryBar.setPreferredWidth(150);
-		statusBar.addToEnd(memoryBar);
-
-		return statusBar;
 	}
 
 	public String getStatusMessage() {
@@ -194,6 +96,63 @@ public class Workbench extends JFrame {
 	public void setStatusMessage(String statusMessage) {
 		this.statusMessage = statusMessage;
 		statusMessageLabel.setText(statusMessage);
+	}
+
+	private void creatingToolBar() {
+		toolbar = new WebToolBar(WebToolBar.HORIZONTAL);
+		toolbar.setToolbarStyle(ToolbarStyle.attached);
+		toolbar.setFloatable(false);
+		loadToolBar(toolbar); // get the toolbar content
+		getContentPane().add(toolbar, "cell 0 0 2 1,growx");
+	}
+
+	public abstract void loadToolBar(WebToolBar toolbar);
+
+	public void creatingMainContent() {
+		layeredPane = new JPanel();
+		getContentPane().add(layeredPane, "cell 1 2,grow");
+		layeredPane.setLayout(new CardLayout(0, 0));
+	}
+
+	public void creatingMainMenu() {
+		tree = new WebTree();
+		tree.setShowsRootHandles(true);
+		tree.setVisibleRowCount(4);
+		tree.setEditable(true);
+		tree.setModel(getModel());
+		WebScrollPane treeScroll = new WebScrollPane(tree);
+		treeScroll.setPreferredSize(new Dimension(230, 200));
+		getContentPane().add(treeScroll, "cell 0 2,growx");
+	}
+
+	protected abstract TreeModel getModel();
+
+	public WebStatusBar createStatusBar() {
+		statusMessageLabel = new WebLabel(statusMessage);
+		
+		// Window status bar
+		WebStatusBar statusBar = new WebStatusBar();
+		getContentPane().add(statusBar, "cell 0 3 2 1,growx");
+
+		// Features state legend
+		errorStateButton = WebButton
+				.createIconWebButton(IconUtil.getIcon("/legend.png"));
+
+		errorStateButton.setFocusable(false);
+		errorStateButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Desplay error messages in a nice little popup");
+			}
+		});
+		
+		statusBar.add(errorStateButton);
+		statusBar.add(statusMessageLabel);
+		
+		WebMemoryBar memoryBar = new WebMemoryBar();
+		memoryBar.setPreferredWidth(150);
+		statusBar.addToEnd(memoryBar);
+
+		return statusBar;
 	}
 
 	private static void setupTabbedPane(JTabbedPane tabbedPane) {
@@ -210,42 +169,28 @@ public class Workbench extends JFrame {
 		tabbedPane.setBackgroundAt(3, new Color(235, 235, 235));
 	}
 
-	private WebBreadcrumb createBreadcrumb() {
-		WebBreadcrumb locationBreadcrumb = new WebBreadcrumb(true);
+	/**
+	 * Create the locationBreadcrumb bar
+	 * 
+	 * @return
+	 */
+	private void createBreadcrumb() {
+		locationBreadcrumb = new WebBreadcrumb(true);
 		locationBreadcrumb.setDrawSides(false, false, true, false);
 		locationBreadcrumb.setShadeWidth(0);
 		locationBreadcrumb.setMargin(4, 2, 4, 0);
-		ButtonGroup locationGroup = new ButtonGroup();
-
-		WebBreadcrumbButton demosButton = new WebBreadcrumbButton(
-				BreadcrumbElementType.start);
-		demosButton.setText("Demos");
-		demosButton.setSelected(true);
-		demosButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-			}
-		});
-
-		locationBreadcrumb.addElement(demosButton);
-		locationGroup.add(demosButton);
-
-		locationBreadcrumb.addElement(new WebBreadcrumbButton(
-				BreadcrumbElementType.middle, "This is a test"));
-
-		WebBreadcrumbButton sourcesButton = new WebBreadcrumbButton(
-				BreadcrumbElementType.end);
-		sourcesButton.setIcon(JarEntry.javaIcon);
-		sourcesButton.setText("Source code");
-		sourcesButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-			}
-		});
-
-		locationBreadcrumb.addElement(sourcesButton);
-		locationGroup.add(sourcesButton);
 		getContentPane().add(locationBreadcrumb, "cell 0 1 2 1,growx");
-		return locationBreadcrumb;
+
+		WebBreadcrumbButton homeButton = new WebBreadcrumbButton(
+				BreadcrumbElementType.start);
+		homeButton.setText("Home");
+		homeButton.setIcon(IconUtil.getIcon("/icons/home.png"));
+		homeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+			}
+		});
+
+		locationBreadcrumb.addElement(homeButton);
 	}
 }
