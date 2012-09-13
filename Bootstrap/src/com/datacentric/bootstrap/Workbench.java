@@ -121,7 +121,9 @@ public abstract class Workbench extends JFrame {
 		tree.setEditable(true);
 		tree.setModel(getModel());
 		WebScrollPane treeScroll = new WebScrollPane(tree);
+		treeScroll.setDrawBorder(false);
 		treeScroll.setPreferredSize(new Dimension(230, 200));
+		treeScroll.setShadeWidth(0);
 		getContentPane().add(treeScroll, "cell 0 2,growx");
 	}
 

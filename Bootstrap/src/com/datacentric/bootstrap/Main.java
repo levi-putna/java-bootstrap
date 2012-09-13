@@ -3,18 +3,29 @@
  */
 package com.datacentric.bootstrap;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.SplashScreen;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import com.alee.laf.WebLookAndFeel;
 
 /**
+ * 
+ * <p>
+ * To get the application run using the splash screen you need to run using the
+ * -splash:images/splash.jpg vm argument.
+ * 
  * @author levip
  * 
  */
@@ -23,6 +34,9 @@ public class Main {
 	protected static WorkbenchImpl frame;
 	private static String ApplicationName = "My Application";
 	private static boolean isDirty = false;
+	private SplashScreen splash;
+	private int loadingCount = 0;
+	Graphics2D g = null;
 
 	/**
 	 * Launch the application.
@@ -49,7 +63,6 @@ public class Main {
 			public void run() {
 				try {
 					Main window = new Main();
-					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -182,8 +195,51 @@ public class Main {
 	 * Create the application.
 	 */
 	public Main() {
-		initialize();
-		frame.addWindowListener(listener);
+		SwingUtilities.invokeLater(new Runnable() {
+
+			public void run() {
+
+				// setup the splash screen
+				splash = SplashScreen.getSplashScreen();
+				if (splash == null) {
+					System.err
+							.println("Splash not supported - this could mean the smplah url is incorect.");
+				} else {
+					g = splash.createGraphics();
+					renderSplashFrame(g, 10, "Iniitiating");
+					splash.update();
+				}
+
+				// setup our main frame application
+				frame = new WorkbenchImpl();
+				initialize();
+
+				/*
+				 * Add any calls to additional loading actions you would like to
+				 * run before the splash screen disappears and the main
+				 * application loads. This could include connection to database,
+				 * performing backups, loading settings...
+				 */
+
+				// clean up our splash screen, we have finished loading the
+				// application
+				if (g != null) {
+					renderSplashFrame(g, 100, "Finish");
+					splash.update();
+				}
+				
+				try {
+					Thread.sleep(4000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				// Display the application
+				frame.setVisible(true);
+			}
+		});
+
 	}
 
 	/**
@@ -196,13 +252,53 @@ public class Main {
 
 	 */
 	protected void initialize() {
-		frame = new WorkbenchImpl();
+
+		// // Load and set an image as icon for the frame
+		// Image image = Toolkit.getDefaultToolkit().createImage(
+		// "images/wkicon.png");
+		// frame.setIconImage(image);
+
+		if (g != null) {
+			renderSplashFrame(g, 15, "Loading Core Components");
+			splash.update();
+		}
+		try {
+			Thread.sleep(4000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		frame.pack();
 		frame.setLocation((screenSize.width - frame.getWidth()) / 2,
 				(screenSize.height - frame.getHeight()) / 2);
 		frame.setMinimumSize(new Dimension(800, 500));
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+		if (g != null) {
+			renderSplashFrame(g, 50, "Loading Core done");
+			splash.update();
+		}
+		try {
+			Thread.sleep(4000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		frame.addWindowListener(listener);
+	}
+
+	private static void renderSplashFrame(Graphics2D g, int frame,
+			String content) {
+		
+		g.setComposite(AlphaComposite.Src);
+		g.setColor(Color.GREEN);
+		g.fillRect(328, 379, 2 * frame, 10);
+		g.setComposite(AlphaComposite.Clear);
+		g.fillRect(258, 330, 300, 20);
+		g.setPaintMode();
+		g.setColor(Color.BLACK);
+		g.drawString(content, 328, 340);
 	}
 
 }

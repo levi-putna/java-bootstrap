@@ -18,6 +18,7 @@ public class WorkbenchImpl extends Workbench {
 		WebButton button = new WebButton("New Bug",
 				IconUtil.getIcon("/icons/bug--plus.png"));
 		button.setFocusable(false);
+		button.setSize(300, 100);
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
