@@ -32,7 +32,6 @@ import com.alee.laf.WebLookAndFeel;
 public class Main {
 
 	protected static WorkbenchImpl frame;
-	private static String ApplicationName = "My Application";
 	private static boolean isDirty = false;
 	private SplashScreen splash;
 	private int loadingCount = 0;
@@ -87,18 +86,9 @@ public class Main {
 	 * @return the Human readable application name
 	 */
 	public static String getApplicationName() {
-		return ApplicationName;
+		return Product.name;
 	}
 
-	/**
-	 * Set the display name used by this application
-	 * 
-	 * @param applicationName
-	 *            the Human readable application name
-	 */
-	public static void setApplicationName(String applicationName) {
-		ApplicationName = applicationName;
-	}
 
 	/**
 	 * Indicates that there are unsaved changes, id set to true then the exit
