@@ -8,17 +8,20 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.SplashScreen;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import com.alee.laf.WebLookAndFeel;
+import com.alee.laf.button.WebButton;
 
 /**
  * 
@@ -31,7 +34,7 @@ import com.alee.laf.WebLookAndFeel;
  */
 public class Main {
 
-	protected static WorkbenchImpl frame;
+	protected static Workbench frame;
 	private static boolean isDirty = false;
 	private SplashScreen splash;
 	private int loadingCount = 0;
@@ -39,29 +42,28 @@ public class Main {
 
 	/**
 	 * Launch the application.
+	 * @throws UnsupportedLookAndFeelException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 * @throws ClassNotFoundException 
 	 */
-	public static void main(String[] args) {
-		String os = System.getProperty("os.name").toLowerCase();
-
-		if (os.contains("windows")) {
-
-		} else if (os.contains("mac")) {
-			// take the menu bar off the jframe
-			System.setProperty("apple.laf.useScreenMenuBar", "true");
-
-			// set the name of the application menu item
-			System.setProperty(
-					"com.apple.mrj.application.apple.menu.about.name",
-					getApplicationName());
-		}
-
+	public static void main(String[] args) throws Exception {
+		
+		// Spetial mac only setup
+		macSetup();
+		
 		// Look and Feel
 		WebLookAndFeel.install();
+		
+		//UIManager.setLookAndFeel(new LookAndFeel("test"));
+		
+		// Overide the look and feel from the WebLookAndFeel for mac only
+		//UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Main window = new Main();
+					new Main();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -69,6 +71,18 @@ public class Main {
 		});
 
 	}
+	
+	private static void macSetup() {
+	     String os = System.getProperty("os.name").toLowerCase();
+	     boolean isMac = os.startsWith("mac os x");    
+
+	     if(!isMac)
+	        return;
+	    
+	     System.setProperty("apple.laf.useScreenMenuBar", "true");
+	     System.setProperty("com.apple.mrj.application.apple.menu.about.name",
+	    		 getApplicationName());  
+	  }
 
 	/**
 	 * if the application is dirty there are unsaved changes, the application
@@ -201,7 +215,7 @@ public class Main {
 				}
 
 				// setup our main frame application
-				frame = new WorkbenchImpl();
+				frame = Workbench.getWorkbenc();
 				initialize();
 
 				/*
@@ -217,13 +231,7 @@ public class Main {
 					renderSplashFrame(g, 100, "Finish");
 					splash.update();
 				}
-				
-				try {
-					Thread.sleep(4000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+
 
 				// Display the application
 				frame.setVisible(true);
@@ -252,30 +260,36 @@ public class Main {
 			renderSplashFrame(g, 15, "Loading Core Components");
 			splash.update();
 		}
-		try {
-			Thread.sleep(4000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		frame.setMinimumSize(new Dimension(1024, 768));
 		frame.pack();
 		frame.setLocation((screenSize.width - frame.getWidth()) / 2,
 				(screenSize.height - frame.getHeight()) / 2);
-		frame.setMinimumSize(new Dimension(800, 500));
+		
+		
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
 		if (g != null) {
 			renderSplashFrame(g, 50, "Loading Core done");
 			splash.update();
 		}
-		try {
-			Thread.sleep(4000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		frame.addWindowListener(listener);
+		
+		
+		
+		// Add new bug button
+        WebButton button = new WebButton("New Bug",
+                IconUtil.getIcon("/icons/bug--plus.png"));
+        button.setFocusable(false);
+        button.setSize(300, 100);
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+ 
+            }
+        });
+        frame.addToolbarItem(button);
 	}
 
 	private static void renderSplashFrame(Graphics2D g, int frame,

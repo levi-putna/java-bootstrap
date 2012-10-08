@@ -3,7 +3,10 @@ package com.datacentric.bootstrap.view;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JWindow;
+import javax.swing.SwingConstants;
 
 public class SmallSplashScreen {
 	public static void main(String[] arg) {

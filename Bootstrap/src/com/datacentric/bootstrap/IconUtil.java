@@ -1,6 +1,5 @@
 package com.datacentric.bootstrap;
 
-import java.awt.Color;
 import java.awt.Image;
 import java.net.URL;
 
